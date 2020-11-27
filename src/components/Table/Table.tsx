@@ -85,7 +85,8 @@ const Table = () => {
   const [description, setDescription] = useState('')
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [rowData, setRowData] = useState<RowInterface[]>([])
-  const [rowID, setRowID] = useState<null | number>(null)
+  const [ID, setID] = useState<null | number>(null)
+  const [isChecked, setIsChecked] = useState(false)
 
   const handleInputType = (e: ChangeEvent<HTMLSelectElement>) => {
     setType(e.target.value)
@@ -108,9 +109,11 @@ const Table = () => {
     const [checkedItemID] = itemIDs.filter((item) => item)
 
     if (checkedItem.length === 0) {
+      setIsChecked(!updatedRowData[id].primary)
       updatedRowData[id].primary = !updatedRowData[id].primary
       setRowData(updatedRowData)
     } else {
+      setIsChecked(false)
       updatedRowData[id].primary = false
       setRowData(updatedRowData)
       if (checkedItemID !== id) alert('You can select only one primary key.')
@@ -119,40 +122,14 @@ const Table = () => {
 
   const editChanges = () => {
     setIsEditOpen(true)
-
-    // save
-    console.log('tooooo', rowID)
-
-    if (!rowID) {
-      console.log('if', rowID)
-      setRowData([
-        ...rowData,
-        {
-          id: uuidv4(),
-          type,
-          name,
-          description,
-          primary: false,
-        },
-      ])
-    } else {
-      console.log('else', rowID)
-      rowData[rowID] = {
-        ...rowData[rowID],
-        type,
-        name,
-        description,
-        primary: false,
-      }
-    }
   }
 
-  const showTable = () => {
-    // to do: fix condition
-    if (name && description) {
-      setIsEditOpen(false)
-      setRowID(null)
-    }
+  const saveChanges = () => {
+    setIsEditOpen(false)
+    // reset every value
+    /*  setName('')
+    setDescription('')
+    setType('string') */
   }
 
   const addNewEmptyRow = () => {
@@ -160,7 +137,7 @@ const Table = () => {
       ...rowData,
       {
         id: uuidv4(),
-        type: '',
+        type: 'string',
         name: '',
         description: '',
         primary: false,
@@ -168,20 +145,36 @@ const Table = () => {
     ])
   }
 
-  const deleteRowData = (id: string) => {
+  const deleteRow = (id: string) => {
     const updatedRowData = rowData.filter((item) => item.id !== id)
     setRowData(updatedRowData)
   }
 
-  console.log('izvan funkcije', rowID)
+  const updateRow = (id: number) => {
+    setID(id)
+  }
+
+  useEffect(() => {
+    ID &&
+      (rowData[ID] = {
+        ...rowData[ID],
+        type,
+        name,
+        description,
+        primary: false,
+      })
+  }, [name, description, type, isChecked, ID])
 
   return (
     <Root>
       <ButtonWrapper>
-        <Button onClick={isEditOpen ? showTable : editChanges}>
-          {isEditOpen ? 'Save' : 'Edit'}
-        </Button>
-        {isEditOpen && <AddButton onClick={addNewEmptyRow}>+</AddButton>}
+        {!isEditOpen && <Button onClick={editChanges}>Edit</Button>}
+        {isEditOpen && (
+          <>
+            <Button onClick={saveChanges}>Save</Button>
+            <AddButton onClick={addNewEmptyRow}>+</AddButton>
+          </>
+        )}
       </ButtonWrapper>
       <StyledTable>
         <thead>
@@ -208,8 +201,8 @@ const Table = () => {
                 handleInputDescription(e)
               }
               handleInputCheckbox={() => handleInputCheckbox(index)}
-              deleteRowData={() => deleteRowData(item.id)}
-              getRowID={() => setRowID(index)}
+              deleteRowData={() => deleteRow(item.id)}
+              updateRow={() => updateRow(index)}
             />
           ))}
         </tbody>
