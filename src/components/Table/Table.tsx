@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import TableHeader from '../TableHeader/TableHeader'
 import TableRow from '../TableRow/TableRow'
 import { v4 as uuidv4 } from 'uuid'
+import { idText } from 'typescript'
 
 const Root = styled.div`
   display: flex;
@@ -82,6 +83,7 @@ interface RowInterface {
 const Table = () => {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [rowData, setRowData] = useState<RowInterface[]>([])
+  const [isNameExisting, setIsNameExisting] = useState(false)
 
   const handleInputType = (
     e: ChangeEvent<HTMLSelectElement>,
@@ -102,12 +104,15 @@ const Table = () => {
   ) => {
     const newRows = rowData.map((item, index) => {
       if (index !== rowIndex) {
+        if (item.name === e.target.value) setIsNameExisting(true)
+        else setIsNameExisting(false)
         return item
       }
       return { ...item, name: e.target.value }
     })
     setRowData(newRows)
   }
+
   const handleInputDescription = (
     e: ChangeEvent<HTMLInputElement>,
     rowIndex: number
@@ -150,13 +155,18 @@ const Table = () => {
     const isEmptyRow = rowData.filter((item) => !item.name || !item.description)
     const isPrimarySelected = rowData.filter((item) => item.primary)
 
+    if (isNameExisting) alert('Name must be unique value.')
     if (isEmptyRow.length !== 0) {
       alert('Fields cannot be empty')
     }
     if (isPrimarySelected.length === 0) {
       alert('Must have at least one primary key')
     }
-    if (isEmptyRow.length === 0 && isPrimarySelected.length !== 0) {
+    if (
+      isEmptyRow.length === 0 &&
+      isPrimarySelected.length !== 0 &&
+      !isNameExisting
+    ) {
       setIsEditOpen(false)
     }
   }
