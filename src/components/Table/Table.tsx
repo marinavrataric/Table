@@ -80,22 +80,46 @@ interface RowInterface {
 }
 
 const Table = () => {
-  const [type, setType] = useState('string')
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [rowData, setRowData] = useState<RowInterface[]>([])
-  const [ID, setID] = useState<null | number>(null)
-  const [isChecked, setIsChecked] = useState(false)
 
-  const handleInputType = (e: ChangeEvent<HTMLSelectElement>) => {
-    setType(e.target.value)
+  const handleInputType = (
+    e: ChangeEvent<HTMLSelectElement>,
+    rowIndex: number
+  ) => {
+    const newRow = rowData.map((item, index) => {
+      if (index !== rowIndex) {
+        return item
+      } else {
+        return { ...item, type: e.target.value }
+      }
+    })
+    setRowData(newRow)
   }
-  const handleInputName = (e: ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value)
+  const handleInputName = (
+    e: ChangeEvent<HTMLInputElement>,
+    rowIndex: number
+  ) => {
+    const newRows = rowData.map((item, index) => {
+      if (index !== rowIndex) {
+        return item
+      }
+      return { ...item, name: e.target.value }
+    })
+    setRowData(newRows)
   }
-  const handleInputDescription = (e: ChangeEvent<HTMLInputElement>) => {
-    setDescription(e.target.value)
+  const handleInputDescription = (
+    e: ChangeEvent<HTMLInputElement>,
+    rowIndex: number
+  ) => {
+    const newRows = rowData.map((item, index) => {
+      if (index !== rowIndex) {
+        return item
+      } else {
+        return { ...item, description: e.target.value }
+      }
+    })
+    setRowData(newRows)
   }
   const handleInputCheckbox = (id: number) => {
     const updatedRowData = [...rowData]
@@ -109,11 +133,9 @@ const Table = () => {
     const [checkedItemID] = itemIDs.filter((item) => item)
 
     if (checkedItem.length === 0) {
-      setIsChecked(!updatedRowData[id].primary)
       updatedRowData[id].primary = !updatedRowData[id].primary
       setRowData(updatedRowData)
     } else {
-      setIsChecked(false)
       updatedRowData[id].primary = false
       setRowData(updatedRowData)
       if (checkedItemID !== id) alert('You can select only one primary key.')
@@ -126,10 +148,6 @@ const Table = () => {
 
   const saveChanges = () => {
     setIsEditOpen(false)
-    // reset every value
-    /*  setName('')
-    setDescription('')
-    setType('string') */
   }
 
   const addNewEmptyRow = () => {
@@ -145,25 +163,10 @@ const Table = () => {
     ])
   }
 
-  const deleteRow = (id: string) => {
-    const updatedRowData = rowData.filter((item) => item.id !== id)
+  const deleteRow = (id: number) => {
+    const updatedRowData = rowData.filter((item, index) => index !== id)
     setRowData(updatedRowData)
   }
-
-  const updateRow = (id: number) => {
-    setID(id)
-  }
-
-  useEffect(() => {
-    ID &&
-      (rowData[ID] = {
-        ...rowData[ID],
-        type,
-        name,
-        description,
-        primary: false,
-      })
-  }, [name, description, type, isChecked, ID])
 
   return (
     <Root>
@@ -192,17 +195,16 @@ const Table = () => {
               primary={item.primary}
               isEditOpen={isEditOpen}
               handleInputType={(e: ChangeEvent<HTMLSelectElement>) =>
-                handleInputType(e)
+                handleInputType(e, index)
               }
               handleInputName={(e: ChangeEvent<HTMLInputElement>) =>
-                handleInputName(e)
+                handleInputName(e, index)
               }
               handleInputDescription={(e: ChangeEvent<HTMLInputElement>) =>
-                handleInputDescription(e)
+                handleInputDescription(e, index)
               }
               handleInputCheckbox={() => handleInputCheckbox(index)}
-              deleteRowData={() => deleteRow(item.id)}
-              updateRow={() => updateRow(index)}
+              deleteRowData={() => deleteRow(index)}
             />
           ))}
         </tbody>

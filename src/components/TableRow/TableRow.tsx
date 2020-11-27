@@ -44,7 +44,6 @@ interface Props {
   handleInputType: (e: ChangeEvent<HTMLSelectElement>) => void
   handleInputCheckbox: (e: ChangeEvent<HTMLInputElement>) => void
   deleteRowData: () => void
-  updateRow: () => void
 }
 
 const TableRow: FunctionComponent<Props> = ({
@@ -58,11 +57,10 @@ const TableRow: FunctionComponent<Props> = ({
   handleInputType,
   handleInputCheckbox,
   deleteRowData,
-  updateRow,
 }) => {
   if (isEditOpen)
     return (
-      <Row onClick={updateRow}>
+      <Row>
         <Column>
           <select onChange={handleInputType} defaultValue={type}>
             <option value="string">string</option>
