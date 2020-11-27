@@ -1,0 +1,91 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": ["react", "@typescript-eslint"],
+  "rules": {
+    "import/namespace": ["error", { "allowComputed": true }],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          ["index", "sibling", "parent", "internal", "external", "builtin"]
+        ],
+        "newlines-between": "never"
+      }
+    ],
+    "semi": ["error", "never"],
+    "quotes": ["error", "single"],
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/interface-name-prefix": "off",
+
+    "object-shorthand": "error",
+    "prefer-destructuring": "warn",
+
+    "react/jsx-key": "off",
+    "react/jsx-no-target-blank": "off",
+    "react/display-name": "off",
+    "react/no-children-prop": "off",
+    "react/no-unescaped-entities": "off",
+    "react/no-direct-mutation-state": "off",
+    "react/self-closing-comp": ["error", { "component": true, "html": true }],
+    "react/jsx-boolean-value": ["error", "always"],
+
+    "no-irregular-whitespace": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["*.story.tsx", "*.test.tsx", "*.test.tsx.snap"],
+      "rules": {
+        "@calm/react-intl/missing-formatted-message": [
+          0,
+          {
+            "noTrailingWhitespace": false,
+            "ignoreLinks": true,
+            "enforceLabels": false,
+            "enforceImageAlts": false,
+            "enforceInputProps": false
+          }
+        ],
+        "@calm/react-intl/missing-attribute": [
+          0,
+          {
+            "noTrailingWhitespace": false,
+            "noSpreadOperator": false,
+            "requireDescription": false,
+            "formatDefineMessages": false
+          }
+        ],
+        "@calm/react-intl/missing-values": 0
+      }
+    }
+  ],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  }
+}
