@@ -147,7 +147,18 @@ const Table = () => {
   }
 
   const saveChanges = () => {
-    setIsEditOpen(false)
+    const isEmptyRow = rowData.filter((item) => !item.name || !item.description)
+    const isPrimarySelected = rowData.filter((item) => item.primary)
+
+    if (isEmptyRow.length !== 0) {
+      alert('Fields cannot be empty')
+    }
+    if (isPrimarySelected.length === 0) {
+      alert('Must have at least one primary key')
+    }
+    if (isEmptyRow.length === 0 && isPrimarySelected.length !== 0) {
+      setIsEditOpen(false)
+    }
   }
 
   const addNewEmptyRow = () => {
