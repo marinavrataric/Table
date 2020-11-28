@@ -1,8 +1,9 @@
 import React, { ChangeEvent, FunctionComponent } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 const Row = styled.tr`
   border-bottom: 1px solid #e7e7e7;
+  height: 50px;
 `
 const Column = styled.td``
 const TextType = styled.p`
@@ -14,9 +15,23 @@ const TextName = styled.p`
   color: #343435;
   font-weight: 700;
 `
-const InputText = styled.input`
+const InputText = styled.input<{ isName: boolean }>`
   border: none;
   background-color: transparent;
+  font-size: 14px;
+
+  ${(props) =>
+    props.isName &&
+    css`
+      color: #343435;
+      font-weight: 700;
+    `};
+  ${(props) =>
+    !props.isName &&
+    css`
+      color: #343435;
+      font-weight: 300;
+    `}
 `
 const DeleteButton = styled.button`
   border: none;
@@ -42,7 +57,7 @@ interface Props {
   handleInputName: (e: ChangeEvent<HTMLInputElement>) => void
   handleInputDescription: (e: ChangeEvent<HTMLInputElement>) => void
   handleInputType: (e: ChangeEvent<HTMLSelectElement>) => void
-  handleInputCheckbox: (e: ChangeEvent<HTMLInputElement>) => void
+  handleInputCheckbox: () => void
   deleteRowData: () => void
 }
 
@@ -58,14 +73,18 @@ const TableRow: FunctionComponent<Props> = ({
   handleInputCheckbox,
   deleteRowData,
 }) => {
+  const typeOptions = ['string', 'number', 'array']
+
   if (isEditOpen)
     return (
       <Row>
         <Column>
           <select onChange={handleInputType} defaultValue={type}>
-            <option value="string">string</option>
-            <option value="number">number</option>
-            <option value="array">array</option>
+            {typeOptions.map((item, index) => (
+              <option key={index} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
         </Column>
         <Column>
@@ -73,6 +92,7 @@ const TableRow: FunctionComponent<Props> = ({
             type="text"
             defaultValue={name}
             onChange={handleInputName}
+            isName={true}
           />
         </Column>
         <Column>
@@ -80,6 +100,7 @@ const TableRow: FunctionComponent<Props> = ({
             type="text"
             defaultValue={description}
             onChange={handleInputDescription}
+            isName={false}
           />
         </Column>
         <Column>

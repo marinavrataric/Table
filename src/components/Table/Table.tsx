@@ -1,9 +1,9 @@
-import React, { ChangeEvent, useEffect, useState } from 'react'
-import styled from 'styled-components'
+import React, { ChangeEvent, useState } from 'react'
+import styled, { css } from 'styled-components'
 import TableHeader from '../TableHeader/TableHeader'
 import TableRow from '../TableRow/TableRow'
 import { v4 as uuidv4 } from 'uuid'
-import { idText } from 'typescript'
+import { validateValues } from '../validateValues'
 
 const Root = styled.div`
   display: flex;
@@ -12,8 +12,31 @@ const Root = styled.div`
 `
 const ButtonWrapper = styled.div`
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   margin: 20px 0;
+`
+const Alert = styled.div<{ isValidationCorrect: boolean }>`
+  font-size: 12px;
+  padding: 4px;
+  ${(props) =>
+    props.isValidationCorrect &&
+    css`
+      display: none;
+    `};
+  ${(props) =>
+    !props.isValidationCorrect &&
+    css`
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20px;
+      width: 370px;
+      height: 20px;
+      background-color: red;
+      color: white;
+      border-radius: 4px;
+    `}
 `
 const AddButton = styled.button`
   border: none;
@@ -81,94 +104,33 @@ interface RowInterface {
 }
 
 const Table = () => {
-  const [isEditOpen, setIsEditOpen] = useState(false)
   const [rowData, setRowData] = useState<RowInterface[]>([])
+  const [isEditOpen, setIsEditOpen] = useState(false)
   const [isNameExisting, setIsNameExisting] = useState(false)
+  const [isValidationCorrect, setIsValidationCorrect] = useState(true)
+  const [validationMessages, setValidationMessages] = useState('')
 
-  const handleInputType = (
-    e: ChangeEvent<HTMLSelectElement>,
-    rowIndex: number
-  ) => {
-    const newRow = rowData.map((item, index) => {
-      if (index !== rowIndex) {
-        return item
-      } else {
-        return { ...item, type: e.target.value }
-      }
-    })
-    setRowData(newRow)
-  }
-  const handleInputName = (
-    e: ChangeEvent<HTMLInputElement>,
-    rowIndex: number
-  ) => {
-    const newRows = rowData.map((item, index) => {
-      if (index !== rowIndex) {
-        if (item.name === e.target.value) setIsNameExisting(true)
-        else setIsNameExisting(false)
-        return item
-      }
-      return { ...item, name: e.target.value }
-    })
-    setRowData(newRows)
-  }
-
-  const handleInputDescription = (
-    e: ChangeEvent<HTMLInputElement>,
-    rowIndex: number
-  ) => {
-    const newRows = rowData.map((item, index) => {
-      if (index !== rowIndex) {
-        return item
-      } else {
-        return { ...item, description: e.target.value }
-      }
-    })
-    setRowData(newRows)
-  }
-  const handleInputCheckbox = (id: number) => {
-    const updatedRowData = [...rowData]
-    const checkedItem = rowData.filter((item) => item.primary)
-
-    const itemIDs = rowData.map((item, index) => {
-      if (item.primary) return index
-      return null
-    })
-
-    const [checkedItemID] = itemIDs.filter((item) => item)
-
-    if (checkedItem.length === 0) {
-      updatedRowData[id].primary = !updatedRowData[id].primary
-      setRowData(updatedRowData)
-    } else {
-      updatedRowData[id].primary = false
-      setRowData(updatedRowData)
-      if (checkedItemID !== id) alert('You can select only one primary key.')
-    }
-  }
-
-  const editChanges = () => {
-    setIsEditOpen(true)
-  }
+  const editChanges = () => setIsEditOpen(true)
 
   const saveChanges = () => {
-    const isEmptyRow = rowData.filter((item) => !item.name || !item.description)
-    const isPrimarySelected = rowData.filter((item) => item.primary)
+    const emptyNameDescription = rowData.filter(
+      (item) => item.name === '' || item.description === ''
+    )
+    const checkedRow = rowData.filter((item) => item.primary)
 
-    if (isNameExisting) alert('Name must be unique value.')
-    if (isEmptyRow.length !== 0) {
-      alert('Fields cannot be empty')
-    }
-    if (isPrimarySelected.length === 0) {
-      alert('Must have at least one primary key')
-    }
-    if (
-      isEmptyRow.length === 0 &&
-      isPrimarySelected.length !== 0 &&
-      !isNameExisting
-    ) {
+    const errors = validateValues(
+      isNameExisting,
+      emptyNameDescription,
+      checkedRow
+    )
+
+    if (errors.length !== 0) setIsValidationCorrect(false)
+    else {
+      setIsValidationCorrect(true)
       setIsEditOpen(false)
     }
+
+    setValidationMessages(errors)
   }
 
   const addNewEmptyRow = () => {
@@ -184,17 +146,77 @@ const Table = () => {
     ])
   }
 
+  const handleInputType = (
+    e: ChangeEvent<HTMLSelectElement>,
+    rowIndex: number
+  ) => {
+    const updatedInputType = rowData.map((item, index) => {
+      if (index === rowIndex) {
+        return { ...item, type: e.target.value }
+      }
+      return item
+    })
+    setRowData(updatedInputType)
+  }
+
+  const handleInputName = (
+    e: ChangeEvent<HTMLInputElement>,
+    rowIndex: number
+  ) => {
+    const hasName = rowData.filter((item) => item.name === e.target.value)
+    if (hasName.length !== 0) setIsNameExisting(true)
+    else setIsNameExisting(false)
+
+    const updatedInputType = rowData.map((item, index) => {
+      if (index === rowIndex) {
+        return { ...item, name: e.target.value }
+      }
+      return item
+    })
+    setRowData(updatedInputType)
+  }
+
+  const handleInputDescription = (
+    e: ChangeEvent<HTMLInputElement>,
+    rowIndex: number
+  ) => {
+    const updatedInputType = rowData.map((item, index) => {
+      if (index === rowIndex) {
+        return { ...item, description: e.target.value }
+      }
+      return item
+    })
+    setRowData(updatedInputType)
+  }
+
+  const handleInputCheckbox = (rowIndex: number) => {
+    const checkedRows = rowData.filter((item) => item.primary)
+
+    const updatedCheckbox = rowData.map((item, index) => {
+      if (index === rowIndex) {
+        if (checkedRows.length === 0) return { ...item, primary: true }
+        return { ...item, primary: false }
+      }
+      return item
+    })
+    setRowData(updatedCheckbox)
+  }
+
   const deleteRow = (id: number) => {
-    const updatedRowData = rowData.filter((item, index) => index !== id)
-    setRowData(updatedRowData)
+    const updatedRows = rowData.filter((item, index) => index !== id)
+    setRowData(updatedRows)
   }
 
   return (
     <Root>
       <ButtonWrapper>
-        {!isEditOpen && <Button onClick={editChanges}>Edit</Button>}
-        {isEditOpen && (
+        {!isEditOpen ? (
+          <Button onClick={editChanges}>Edit</Button>
+        ) : (
           <>
+            <Alert isValidationCorrect={isValidationCorrect}>
+              {validationMessages}
+            </Alert>
             <Button onClick={saveChanges}>Save</Button>
             <AddButton onClick={addNewEmptyRow}>+</AddButton>
           </>
